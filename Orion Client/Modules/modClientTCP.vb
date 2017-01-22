@@ -14,6 +14,7 @@ Module modClientTCP
     Private asyncBuff As Byte()
     Private asyncBuffs As New List(Of Byte())
     Public shouldHandleData As Boolean
+    Public servdown as boolean = False
     Public Sub Connect()
         If Not PlayerSocket Is Nothing Then
             Try
@@ -60,15 +61,13 @@ Module modClientTCP
             ReDim myBytes(byteAmt - 1)
             Buffer.BlockCopy(asyncBuff, 0, myBytes, 0, byteAmt)
             If byteAmt = 0 Then
-                MsgBox("Disconnected.")
-                DestroyGame()
+                servdown = True
                 Exit Sub
             End If
             HandleData(myBytes)
             myStream.BeginRead(asyncBuff, 0, 8192, AddressOf OnReceive, Nothing)
         Catch ex As Exception
-            MsgBox("Disconnected.")
-            DestroyGame()
+            servdown = True
         End Try
 
     End Sub
@@ -80,7 +79,9 @@ Module modClientTCP
         Else
             IsConnected = False
         End If
-
+        If servdown = True Then
+           IsConnected = False
+        End If
     End Function
     Public Sub SendData(ByVal bytes() As Byte)
         Try
